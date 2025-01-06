@@ -1,0 +1,17 @@
+[package]
+name = "blockchain"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "blockchainlib"
+src = "src/lib.rs"
+
+[[bin]]
+name = "blockchain"
+path = "src/main.rs"
+
+[dependencies]
+crypto-hash = "0.3.4"
+hex = "0.4.3"
+
