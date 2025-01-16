@@ -1,4 +1,7 @@
+use std::hash::Hash;
 use super::*;
+use std::collections::HashSet;
+#[derive(Debug)]
 pub enum BlockValidationErr {
     MismatchedIndex,
     InvalidHash,
@@ -15,22 +18,28 @@ pub struct Blockchain {
 }
 
 impl Blockchain {
-    pub fn update_with_block(&self, block: Block) -> Result<(), BlockValidationError> {
+    pub fn new() -> Self {
+        Blockchain {
+            blocks: vec![],
+            unspent_outputs: HashSet::new()
+        }
+    }
+    pub fn update_with_block(&self, block: Block) -> Result<(), BlockValidationErr> {
         let i = self.blocks.len();
         if block.index != i as u32 {
-            return Err(BlockValidationError::MistmatchedIndex);
+            return Err(BlockValidationErr::MismatchedIndex);
         } else if !block::check_difficulty(&block.hash(), block.difficulty) {
-            return Err(BlockValidationErrror::InvalidHash);
+            return Err(BlockValidationErr::InvalidHash);
         } else if i != 0 {
             let prev_block = &self.blocks[i - 1];
             if block.timestamp <= prev_block.timestamp {
-                return Err(BlockValidationError::AchronologicalTimestamp);
+                return Err(BlockValidationErr::AchronologicalTimestamp);
             } else if block.prev_block_hash != prev_block.hash {
-                return Err(BlockValidationError::MismatchedPreviousHash);
+                return Err(BlockValidationErr::MismatchedPreviousHash);
             }
         } else {
             if block.prev_block_hash != vec![0; 32] {
-                return Err(BlockValidationError::InvalidFirstBlock);
+                return Err(BlockValidationErr::InvalidFirstBlock);
             }
         }
         if let Some((coinbase, transactions)) = block.transactions.split_first() {
@@ -47,14 +56,14 @@ impl Blockchain {
                 if !(&input_hashes - &self.unspent_outputs).is_empty()
                     || &(&input_hashes & &block_spent).is_empty()
                 {
-                    return Err(BlockChainValidationErr::invalidInput);
+                    return Err(BlockValidationErr::InvalidInput);
                 }
 
                 let input_value = transaction.input_value();
                 let output_value = transaction.output_value();
 
                 if output_value > input_value {
-                    return Err(BlockValidationError::insufficientInputValue);
+                    return Err(BlockValidationErr::InsufficientInputValue);
                 }
 
                 let fee = input_value - output_value;
@@ -73,6 +82,8 @@ impl Blockchain {
                 .retain(|output| !block_spent.contains(output));
             self.unspent_outputs.extend(block_created);
         }
+        
+        self.blocks.push(block);
         Ok(())
     }
 }

@@ -64,7 +64,7 @@ impl Hashable for Block {
         bytes.extend(&self.timestamp.to_le_bytes());
         bytes.extend(&self.prev_block_hash);
         bytes.extend(&self.nonce.to_le_bytes());
-        bytes.extend(self.transactions.iter().flat_map(|transaction| transaction.bytes()).collect::<Vec<u8>>;
+        bytes.extend(&self.transactions.iter().flat_map(|transaction| transaction.bytes()).collect::<Vec<u8>>);
         bytes.extend(&self.difficulty.to_le_bytes());
 
         bytes

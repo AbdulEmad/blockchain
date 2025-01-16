@@ -1,6 +1,6 @@
 use super::*;
 use std::collections::HashSet;
-
+use std::hash::Hash;
 pub struct Output {
     pub to_addr: Address,
     pub value: u64,
