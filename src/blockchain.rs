@@ -1,6 +1,6 @@
-use std::hash::Hash;
 use super::*;
 use std::collections::HashSet;
+
 #[derive(Debug)]
 pub enum BlockValidationErr {
     MismatchedIndex,
@@ -15,16 +15,17 @@ pub enum BlockValidationErr {
 
 pub struct Blockchain {
     pub blocks: Vec<Block>,
+    unspent_outputs: HashSet<Hash>
 }
 
 impl Blockchain {
     pub fn new() -> Self {
         Blockchain {
             blocks: vec![],
-            unspent_outputs: HashSet::new()
+            unspent_outputs: HashSet::new(),
         }
     }
-    pub fn update_with_block(&self, block: Block) -> Result<(), BlockValidationErr> {
+    pub fn update_with_block(&mut self, block: Block) -> Result<(), BlockValidationErr> {
         let i = self.blocks.len();
         if block.index != i as u32 {
             return Err(BlockValidationErr::MismatchedIndex);
@@ -46,15 +47,15 @@ impl Blockchain {
             if !coinbase.is_coinbase() {
                 return Err(BlockValidationErr::InvalidCoinbaseTransaction);
             }
-            let mut block_spent = HashSet::new();
 
             let mut block_spent: HashSet<Hash> = HashSet::new();
+            let mut block_created: HashSet<Hash> = HashSet::new();
             let mut total_fee = 0;
 
             for transaction in transactions {
                 let input_hashes = transaction.input_hashes();
                 if !(&input_hashes - &self.unspent_outputs).is_empty()
-                    || &(&input_hashes & &block_spent).is_empty()
+                    || (&input_hashes & &block_spent).is_empty()
                 {
                     return Err(BlockValidationErr::InvalidInput);
                 }
@@ -69,7 +70,7 @@ impl Blockchain {
                 let fee = input_value - output_value;
                 total_fee += fee;
                 block_spent.extend(input_hashes);
-                block_created.extend(transaction.output_hashes);
+                block_created.extend(transaction.output_hashes());
             }
 
             if coinbase.output_value() < total_fee {

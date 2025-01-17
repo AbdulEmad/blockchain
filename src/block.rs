@@ -4,10 +4,10 @@ use std::fmt::{self, Debug, Formatter};
 pub struct Block {
     pub index: u32,
     pub timestamp: u128,
-    pub hash: BlockHash,
-    pub prev_block_hash: BlockHash,
+    pub hash: Hash,
+    pub prev_block_hash: Hash,
     pub nonce: u64,
-    pub transactions: String,
+    pub transactions: Vec<Transaction>,
     pub difficulty: u128,
 }
 
@@ -19,7 +19,7 @@ impl Debug for Block {
             &self.index,
             &hex::encode(&self.hash),
             &self.timestamp,
-            &self.transactions,
+            &self.transactions.len(),
             &self.nonce
         )
     }
@@ -29,9 +29,9 @@ impl Block {
     pub fn new(
         index: u32,
         timestamp: u128,
-        prev_block_hash: BlockHash,
+        prev_block_hash: Hash,
         nonce: u64,
-        transactions: String,
+        transactions: Vec<Transaction>,
         difficulty: u128,
     ) -> Self {
         Block {
@@ -64,13 +64,13 @@ impl Hashable for Block {
         bytes.extend(&self.timestamp.to_le_bytes());
         bytes.extend(&self.prev_block_hash);
         bytes.extend(&self.nonce.to_le_bytes());
-        bytes.extend(&self.transactions.iter().flat_map(|transaction| transaction.bytes()).collect::<Vec<u8>>);
+        bytes.extend(self.transactions.iter().flat_map(|transaction| transaction.bytes()).collect::<Vec<u8>>());
         bytes.extend(&self.difficulty.to_le_bytes());
 
         bytes
     }
 }
 
-pub fn check_difficulty(hash: &BlockHash, difficulty: u128) -> bool {
+pub fn check_difficulty(hash: &Hash, difficulty: u128) -> bool {
     difficulty > difficulty_bytes_as_u128(&hash)
 }
