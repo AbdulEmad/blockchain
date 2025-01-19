@@ -15,7 +15,7 @@ pub enum BlockValidationErr {
 
 pub struct Blockchain {
     pub blocks: Vec<Block>,
-    unspent_outputs: HashSet<Hash>
+    unspent_outputs: HashSet<Hash>,
 }
 
 impl Blockchain {
@@ -83,7 +83,7 @@ impl Blockchain {
                 .retain(|output| !block_spent.contains(output));
             self.unspent_outputs.extend(block_created);
         }
-        
+
         self.blocks.push(block);
         Ok(())
     }

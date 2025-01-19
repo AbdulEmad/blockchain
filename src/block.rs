@@ -30,7 +30,6 @@ impl Block {
         index: u32,
         timestamp: u128,
         prev_block_hash: Hash,
-        nonce: u64,
         transactions: Vec<Transaction>,
         difficulty: u128,
     ) -> Self {
@@ -39,7 +38,7 @@ impl Block {
             timestamp,
             hash: vec![0; 32],
             prev_block_hash,
-            nonce,
+            nonce: 0,
             transactions,
             difficulty,
         }
@@ -64,7 +63,12 @@ impl Hashable for Block {
         bytes.extend(&self.timestamp.to_le_bytes());
         bytes.extend(&self.prev_block_hash);
         bytes.extend(&self.nonce.to_le_bytes());
-        bytes.extend(self.transactions.iter().flat_map(|transaction| transaction.bytes()).collect::<Vec<u8>>());
+        bytes.extend(
+            self.transactions
+                .iter()
+                .flat_map(|transaction| transaction.bytes())
+                .collect::<Vec<u8>>(),
+        );
         bytes.extend(&self.difficulty.to_le_bytes());
 
         bytes
