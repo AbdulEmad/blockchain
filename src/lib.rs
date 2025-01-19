@@ -1,4 +1,4 @@
-type BlockHash = Vec<u8>;
+type Hash = Vec<u8>;
 type Address = String;
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -27,5 +27,5 @@ pub use crate::hashable::Hashable;
 mod blockchain;
 pub use crate::blockchain::Blockchain;
 
-mod transaction;
+pub mod transaction;
 pub use crate::transaction::Transaction;
